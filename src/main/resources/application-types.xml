@@ -1,0 +1,28 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<types:mule xmlns:types="http://www.mulesoft.org/schema/mule/types">
+  <types:catalog>
+    <types:type name="employee-data" format="csv">
+      <types:shape format="weave" example="examples/employee.csv"><![CDATA[%dw 2.0
+
+type employee_data = Array<{|  employee_id: String,   first_name: String,   last_name: String,   age: String,   department: String,   job_title: String,   salary: String,   hire_date: String|}> {"isQuotedString": "false",
+"header": "true",
+"headerLineNumber": "0"}
+
+]]></types:shape>
+      <types:properties>
+        <types:property name="headerLineNumber" value="0"/>
+        <types:property name="header" value="true"/>
+        <types:property name="isQuotedString" value="false"/>
+      </types:properties>
+    </types:type>
+  </types:catalog>
+  <types:enrichment select="#e04a7e07-bcfd-42a5-9d76-0970eab02564">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="employee-data"/>
+        </types:message>
+      </types:input-event>
+    </types:processor-declaration>
+  </types:enrichment>
+</types:mule>

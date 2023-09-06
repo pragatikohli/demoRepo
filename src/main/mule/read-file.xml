@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:file="http://www.mulesoft.org/schema/mule/file" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd">
+	<flow name="read-fileFlow" doc:id="abde8524-ddc4-46d3-b3ce-063b81260820" >
+		<http:listener doc:name="Listener" doc:id="fa04169e-dee9-4cbc-b837-01bdadd2ce99" config-ref="HTTP_Listener_config" path="read1"/>
+		<file:read doc:name="Read" doc:id="40f87149-b489-4ef8-859a-a3b72522aa00" config-ref="File_Config" path="resources\examples\mule-file\emp-hr-employee.json" outputMimeType="application/csv"/>
+		<logger level="INFO" doc:name="Logger" doc:id="52578832-1a5e-4784-976e-1144c2b9cf4f" message="#[payload]"/>
+	</flow>
+</mule>

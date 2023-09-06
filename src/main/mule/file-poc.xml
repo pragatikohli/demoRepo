@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:file="http://www.mulesoft.org/schema/mule/file" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd">
+	<db:config name="Database_Config1" doc:name="Database Config" doc:id="bdb8ef5f-2855-4377-9137-8b3d214cb08c" >
+		<db:my-sql-connection host="127.0.0.1" port="3306" user="pragati" password="pragati@13" database="employee_data" />
+	</db:config>
+	<flow name="file-pocFlow" doc:id="de4911e8-b8d2-47eb-8318-40631ba8adc7" >
+		<http:listener doc:name="Listener" doc:id="b90bc696-316a-47ca-8219-ab9d827a79fd" config-ref="HTTP_Listener_config" path="filePoc/{id}" allowedMethods="GET"/>
+		<db:select doc:name="Select" doc:id="689a9c31-26b1-4add-a8dd-d059c0d7e7fe" config-ref="Database_Config1" target="payload">
+			<db:sql ><![CDATA[select * from employees where employee_id= :employee_id]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	employee_id: attributes.uriParams.id
+}]]]></db:input-parameters>
+		</db:select>
+		<choice doc:name="Choice" doc:id="ec41509e-8feb-4a2f-b1bc-c2914bfc847c" >
+			<when expression="#[sizeOf(vars.payload) &gt; 0]">
+				<ee:transform doc:name="Transform Message" doc:id="4f99bec9-35e3-49c0-8637-4f268fe18b1e" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+vars.payload map(emp, index) -> {
+	employee_id: emp.employee_id,
+	first_name: emp.first_name,
+	last_name: emp.last_name,
+	age: emp.age,
+	department: emp.department,
+	job_title: emp.job_title,
+	salary: emp.salary
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<file:create-directory doc:name="Create directory" doc:id="01f46d46-c54c-43fc-894f-40c88ee1cec7" config-ref="File_Config" directoryPath="new"/>
+				<file:write doc:name="Write" doc:id="965bfbd3-0a3e-419f-8a41-d70bb1858e2f" config-ref="File_Config" path="new/newFile.txt"/>
+			</when>
+			<otherwise >
+				<ee:transform doc:name="Transform Message" doc:id="5b7caec4-9338-4591-9f13-b9bea9242424" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message: "The data doesn't exist."
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</otherwise>
+		</choice>
+		<logger level="INFO" doc:name="Logger" doc:id="f67869b6-32d8-4c31-a6b6-1b6866ce70eb" message="#[payload]"/>
+	</flow>
+	<flow name="on-new-or-update-file-flow" doc:id="afd77829-233d-4e9a-beb0-04b858e8dae8" >
+		<file:listener doc:name="On New or Updated File" doc:id="451626f9-19c8-4737-b6e4-7c5ff96cd3e9" config-ref="File_Config" directory="new">
+			<scheduling-strategy >
+				<fixed-frequency />
+			</scheduling-strategy>
+		</file:listener>
+		<logger level="INFO" doc:name="Logger" doc:id="fa8a2df4-306a-4554-a8c9-b6e6ebfb29a6" message="#[payload]"/>
+	</flow>
+</mule>

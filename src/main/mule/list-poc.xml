@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:file="http://www.mulesoft.org/schema/mule/file"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="list-pocFlow" doc:id="8dcc6b0d-86cb-408b-8e63-efddb5e735f0" >
+		<http:listener doc:name="Listener" doc:id="4197c547-5020-447b-8527-fc39c7a0ea3a" config-ref="HTTP_Listener_config" path="listFiles"/>
+		<logger level="INFO" doc:name="Start Log" doc:id="945bccc5-87af-4067-b741-ad87921c1a35" message="The flow has started"/>
+		<file:list doc:name="List" doc:id="b8940f84-0cb9-4b1a-9381-e9dc7bfa75ea" config-ref="File_Config" directoryPath="new" recursive="true">
+		</file:list>
+		<ee:transform doc:name="Transform Message" doc:id="d16ff9d9-65e9-4d5a-ab07-50517b5bd249" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload.attributes.fileName]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="End Log" doc:id="13046fb7-43b4-4e70-be3d-fa688b23ba64" message="The flow has ended"/>
+	</flow>
+</mule>
